@@ -17,14 +17,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
 .body-section{padding:0 18px 48px;flex:1}
 .header{margin-bottom:20px}
 .site-title{display:block;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:14px}
-.clock{font-size:56px;font-weight:800;letter-spacing:-.03em;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums;margin-bottom:12px}
-.location-line{display:flex;align-items:center;gap:6px;font-size:18px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.clock{font-size:56px;font-weight:800;letter-spacing:-.03em;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums;margin-bottom:14px}
+.location-line{display:flex;align-items:center;gap:6px;font-size:18px;font-weight:600;color:var(--ink);margin-bottom:5px}
 .location-line svg{color:var(--accent);flex-shrink:0}
 .location-text{line-height:1.3}
-.date{font-size:12.5px;font-weight:500;color:var(--ink-muted);margin-bottom:6px}
-.weather{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:var(--ink-soft)}
-.weather svg{flex-shrink:0;color:var(--accent)}
-.weather .temp{color:var(--ink);font-weight:700}
+.subline{font-size:13px;font-weight:500;color:var(--ink-muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;line-height:1.4}
+.weather{display:inline-flex;align-items:center;gap:5px}
+.weather .dot{opacity:.55}
 .tab-bar{display:flex;gap:3px;background:#f0f0ec;padding:3px;border-radius:11px}
 .tab-btn{flex:1;border:none;background:transparent;font-family:var(--font);font-size:12.5px;font-weight:600;color:var(--ink-muted);padding:9px 0;border-radius:8px;cursor:pointer;transition:background .2s,color .2s}
 .tab-btn.active{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.07)}
@@ -97,10 +96,9 @@ body{background:linear-gradient(180deg,#f9f9f7 0%,#eef1ec 100%);padding:40px 20p
 .top-section{position:static;background:transparent;padding:0}
 .body-section{padding:0}
 .site-title{font-size:11px;margin-bottom:18px}
-.clock{font-size:68px;margin-bottom:14px}
+.clock{font-size:68px;margin-bottom:16px}
 .location-line{font-size:20px}
-.date{font-size:13px}
-.weather{font-size:13px}
+.subline{font-size:13px}
 .header{margin-bottom:24px}
 }
 @media (max-width:380px){
@@ -119,11 +117,9 @@ body{background:linear-gradient(180deg,#f9f9f7 0%,#eef1ec 100%);padding:40px 20p
 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
 <span class="location-text" id="locationText">memuat...</span>
 </div>
-<div class="date" id="date">—</div>
-<div class="weather hidden" id="weather">
-<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="weatherIcon"><circle cx="12" cy="12" r="4"/></svg>
-<span class="temp" id="weatherTemp">—</span>
-<span id="weatherDesc">—</span>
+<div class="subline">
+<span id="date">—</span>
+<span class="weather hidden" id="weather"><span class="dot">·</span><span id="weatherTemp">—</span><span id="weatherDesc">—</span></span>
 </div>
 </div>
 <div class="tab-bar">
@@ -351,27 +347,10 @@ const w={temp:Math.round(data.current.temperature_2m),code:data.current.weather_
 cacheSet('weather_'+key,w);
 return w;
 }
-const weatherMap={
-0:['Cerah','sun'],1:['Cerah berawan','sun'],2:['Berawan sebagian','cloud-sun'],3:['Mendung','cloud'],
-45:['Berkabut','cloud'],48:['Berkabut','cloud'],
-51:['Gerimis ringan','rain'],53:['Gerimis','rain'],55:['Gerimis lebat','rain'],
-61:['Hujan ringan','rain'],63:['Hujan','rain'],65:['Hujan lebat','rain'],
-71:['Salju ringan','rain'],73:['Salju','rain'],75:['Salju lebat','rain'],
-80:['Hujan ringan','rain'],81:['Hujan','rain'],82:['Hujan lebat','rain'],
-95:['Badai petir','storm'],96:['Badai petir','storm'],99:['Badai petir','storm']
-};
-const weatherIcons={
-sun:`<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>`,
-'cloud-sun':`<path d="M12 2v2M4.9 4.9l1.4 1.4"/><path d="M17 18H7a4 4 0 1 1 .6-7.96A5.5 5.5 0 0 1 17 12.5 3.5 3.5 0 0 1 17 18z"/>`,
-cloud:`<path d="M17.5 19H8a4.5 4.5 0 1 1 .7-8.94A6 6 0 0 1 20 10.5 3.5 3.5 0 0 1 17.5 19z"/>`,
-rain:`<path d="M16 13v-1a4 4 0 0 0-8 0v1"/><path d="M18.5 17H7a4.5 4.5 0 1 1 .7-8.94A6 6 0 0 1 20 10.5 3.5 3.5 0 0 1 17.5 17z"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/>`,
-storm:`<path d="M17.5 17H7a4.5 4.5 0 1 1 .7-8.94A6 6 0 0 1 20 10.5 3.5 3.5 0 0 1 17.5 17z"/><path d="M13 13l-2 3h2l-2 3"/>`
-};
+const weatherMap={0:'Cerah',1:'Cerah berawan',2:'Berawan sebagian',3:'Mendung',45:'Berkabut',48:'Berkabut',51:'Gerimis ringan',53:'Gerimis',55:'Gerimis lebat',61:'Hujan ringan',63:'Hujan',65:'Hujan lebat',71:'Salju ringan',73:'Salju',75:'Salju lebat',80:'Hujan ringan',81:'Hujan',82:'Hujan lebat',95:'Badai petir',96:'Badai petir',99:'Badai petir'};
 function renderWeather(w){
-const[label,iconKey]=weatherMap[w.code]||['Cerah','sun'];
 document.getElementById('weatherTemp').textContent=w.temp+'°C';
-document.getElementById('weatherDesc').textContent=label;
-document.getElementById('weatherIcon').innerHTML=weatherIcons[iconKey]||weatherIcons.sun;
+document.getElementById('weatherDesc').textContent=weatherMap[w.code]||'Cerah';
 document.getElementById('weather').classList.remove('hidden');
 }
 function renderPrayers(prayers){
