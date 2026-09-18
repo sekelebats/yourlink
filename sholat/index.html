@@ -17,15 +17,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:10
 .body-section{padding:0 18px 48px;flex:1}
 .header{margin-bottom:20px}
 .site-title{display:block;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:14px}
-.clock{font-size:56px;font-weight:800;letter-spacing:-.03em;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums;margin-bottom:14px}
-.location-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
-.location-line{display:flex;align-items:center;gap:6px;font-size:18px;font-weight:600;color:var(--ink);min-width:0;flex:1}
+.clock{font-size:56px;font-weight:800;letter-spacing:-.03em;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums;margin-bottom:12px}
+.location-line{display:flex;align-items:center;gap:6px;font-size:18px;font-weight:600;color:var(--ink);margin-bottom:2px}
 .location-line svg{color:var(--accent);flex-shrink:0}
-.location-text{line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.weather{display:flex;align-items:center;gap:5px;font-size:13.5px;font-weight:500;color:var(--ink-muted);flex-shrink:0;line-height:1.3;white-space:nowrap}
-.weather svg{flex-shrink:0;color:var(--ink-muted);width:14px;height:14px}
-.weather .temp{font-weight:600}
-.subline{font-size:13.5px;font-weight:500;color:var(--ink-muted);line-height:1.4}
+.location-text{line-height:1.3}
+.date{font-size:12.5px;font-weight:500;color:var(--ink-muted);margin-bottom:6px}
+.weather{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:var(--ink-soft)}
+.weather svg{flex-shrink:0;color:var(--accent)}
+.weather .temp{color:var(--ink);font-weight:700}
 .tab-bar{display:flex;gap:3px;background:#f0f0ec;padding:3px;border-radius:11px}
 .tab-btn{flex:1;border:none;background:transparent;font-family:var(--font);font-size:12.5px;font-weight:600;color:var(--ink-muted);padding:9px 0;border-radius:8px;cursor:pointer;transition:background .2s,color .2s}
 .tab-btn.active{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.07)}
@@ -98,16 +97,14 @@ body{background:linear-gradient(180deg,#f9f9f7 0%,#eef1ec 100%);padding:40px 20p
 .top-section{position:static;background:transparent;padding:0}
 .body-section{padding:0}
 .site-title{font-size:11px;margin-bottom:18px}
-.clock{font-size:68px;margin-bottom:16px}
+.clock{font-size:68px;margin-bottom:14px}
 .location-line{font-size:20px}
-.weather{font-size:13.5px}
-.subline{font-size:13.5px}
+.date{font-size:13px}
+.weather{font-size:13px}
 .header{margin-bottom:24px}
 }
 @media (max-width:380px){
 .clock{font-size:48px}
-.location-line{font-size:16px}
-.weather{font-size:12.5px}
 .ayat-arabic{font-size:22px}
 }
 </style>
@@ -118,18 +115,16 @@ body{background:linear-gradient(180deg,#f9f9f7 0%,#eef1ec 100%);padding:40px 20p
 <div class="header">
 <div class="site-title">Waktu Sholat & Qur'an</div>
 <div class="clock" id="clock">00:00:00</div>
-<div class="location-row">
 <div class="location-line">
 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
 <span class="location-text" id="locationText">memuat...</span>
 </div>
+<div class="date" id="date">—</div>
 <div class="weather hidden" id="weather">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="weatherIcon"><circle cx="12" cy="12" r="4"/></svg>
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="weatherIcon"><circle cx="12" cy="12" r="4"/></svg>
 <span class="temp" id="weatherTemp">—</span>
 <span id="weatherDesc">—</span>
 </div>
-</div>
-<div class="subline"><span id="date">—</span></div>
 </div>
 <div class="tab-bar">
 <button class="tab-btn active" id="tabBtnSholat" onclick="switchTab('sholat')">Waktu Sholat</button>
