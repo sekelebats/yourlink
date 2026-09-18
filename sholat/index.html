@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Waktu Sholat & Qur'an</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Amiri+Quran&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f9f9f7;--card-bg:#fff;--ink:#111;--ink-soft:#4a4a4a;--ink-muted:#9a9a95;--line:#e7e7e2;--accent:#2d6a4f;--accent-soft:#e8f3ee;--accent-strong:#1b4332;--font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;--font-ar:'Amiri Quran',serif}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 18px 48px;-webkit-font-smoothing:antialiased}
+.card{width:100%;max-width:380px}
+.header{margin-bottom:20px}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;gap:12px}
+.site-title{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-muted)}
+.location-wrap{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--ink-soft);text-align:right;cursor:pointer;transition:color .15s;max-width:190px}
+.location-wrap:hover{color:var(--ink)}
+.location-wrap svg{flex-shrink:0}
+.location-text{line-height:1.4}
+.clock-wrap{margin-bottom:2px}
+.clock{font-size:48px;font-weight:800;letter-spacing:-.03em;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+.subrow{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:10px}
+.date{font-size:12.5px;font-weight:500;color:var(--ink-muted);letter-spacing:.01em}
+.weather{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+.weather svg{flex-shrink:0;color:var(--accent)}
+.weather .temp{color:var(--ink);font-weight:700}
+.weather.hidden{display:none}
+.tab-bar{display:flex;gap:3px;background:#f0f0ec;padding:3px;border-radius:11px;margin:22px 0 20px}
+.tab-btn{flex:1;border:none;background:transparent;font-family:var(--font);font-size:12.5px;font-weight:600;color:var(--ink-muted);padding:9px 0;border-radius:8px;cursor:pointer;transition:background .2s,color .2s}
+.tab-btn.active{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.hidden{display:none!important}
+.view.hidden{display:none}
+.search-wrap{display:flex;gap:8px;margin-bottom:22px;border-bottom:1px solid var(--line);padding-bottom:18px}
+.search-input{flex:1;border:none;background:transparent;font-family:var(--font);font-size:13px;font-weight:500;color:var(--ink);padding:4px 0;outline:none;border-bottom:1px solid var(--line);transition:border-color .2s}
+.search-input::placeholder{color:var(--ink-muted);font-weight:400}
+.search-input:focus{border-color:var(--accent)}
+.search-btn{background:none;border:none;cursor:pointer;color:var(--ink-muted);padding:0 2px;display:flex;align-items:center;transition:color .15s}
+.search-btn:hover{color:var(--ink)}
+.prayer-list{list-style:none}
+.prayer-item{display:flex;justify-content:space-between;align-items:center;padding:14px 2px;border-bottom:1px solid var(--line);transition:opacity .15s,background .15s;border-radius:6px}
+.prayer-item:first-child{border-top:1px solid var(--line)}
+.prayer-item:not(.is-next){opacity:.55}
+.prayer-list:not(.has-next) .prayer-item{opacity:1}
+.prayer-item.is-next{opacity:1;background:var(--accent-soft);padding-left:10px;padding-right:10px;margin:0 -10px}
+.prayer-left{display:flex;align-items:center;gap:11px}
+.prayer-icon{color:var(--ink-muted);width:15px;height:15px;flex-shrink:0}
+.prayer-item.is-next .prayer-icon{color:var(--accent)}
+.prayer-name{font-size:13.5px;font-weight:500;color:var(--ink-soft);letter-spacing:.01em}
+.prayer-item.is-next .prayer-name{color:var(--accent-strong);font-weight:700}
+.prayer-time{font-size:14.5px;color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.prayer-item.is-next .prayer-time{color:var(--accent);font-weight:800}
+.next-box{margin-top:18px;padding:13px 14px;background:var(--ink);border-radius:8px;display:flex;align-items:center;gap:9px;font-size:12px;font-weight:500;color:#fff}
+.next-box svg{flex-shrink:0;opacity:.7}
+.next-box span#nextName{font-weight:700}
+.next-box span#nextCountdown{color:#b7e4c7;font-weight:700}
+.next-box.hidden{display:none}
+.status{font-size:12px;font-weight:500;color:var(--ink-muted);text-align:center;padding:32px 0}
+.status.error{color:#c0392b}
+.footer{margin-top:26px;font-size:10.5px;font-weight:500;color:var(--ink-muted);letter-spacing:.03em;text-align:center}
+.prayer-item.skeleton-row .prayer-name,.prayer-item.skeleton-row .prayer-time{visibility:hidden}
+.prayer-item.skeleton-row{position:relative}
+.prayer-item.skeleton-row::after{content:'';position:absolute;left:25px;right:0;top:50%;height:12px;transform:translateY(-50%);background:linear-gradient(90deg,var(--line) 25%,#f0f0ec 37%,var(--line) 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;border-radius:4px}
+@keyframes shimmer{0%{background-position:100% 50%}100%{background-position:0 50%}}
+.continue-box{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--accent-soft);border-radius:8px;padding:12px 14px;margin-bottom:20px;cursor:pointer}
+.continue-box.hidden{display:none}
+.continue-label{font-size:10.5px;font-weight:600;color:var(--accent);letter-spacing:.03em;text-transform:uppercase}
+.continue-name{font-size:13.5px;font-weight:700;color:var(--accent-strong);margin-top:2px}
+.continue-box svg{color:var(--accent);flex-shrink:0}
+.surah-list{list-style:none}
+.surah-item{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .15s}
+.surah-item:first-child{border-top:1px solid var(--line)}
+.surah-item:active{background:var(--accent-soft)}
+.surah-num{width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent-strong);font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.surah-info{flex:1;min-width:0}
+.surah-name-latin{font-size:13.5px;font-weight:600;color:var(--ink)}
+.surah-meta{font-size:11px;color:var(--ink-muted);margin-top:2px}
+.surah-name-arabic{font-family:var(--font-ar);font-size:18px;color:var(--ink-soft);flex-shrink:0;padding-left:4px}
+.back-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--ink-muted);background:none;border:none;cursor:pointer;padding:4px 0;margin-bottom:16px;transition:color .15s}
+.back-btn:hover{color:var(--ink)}
+.surah-header{text-align:center;padding-bottom:20px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.surah-header-arabic{font-family:var(--font-ar);font-size:28px;color:var(--ink);margin-bottom:8px}
+.surah-header-latin{font-size:15px;font-weight:700;color:var(--ink)}
+.surah-header-arti{font-size:12px;color:var(--ink-muted);margin-top:2px}
+.surah-header-meta{font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);margin-top:10px}
+.play-all-btn{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:20px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:background .15s}
+.play-all-btn:hover{background:var(--accent-strong)}
+.play-all-btn.playing{background:var(--accent-strong)}
+.bismillah{font-family:var(--font-ar);font-size:23px;text-align:center;color:var(--ink);padding:22px 0;border-bottom:1px solid var(--line);margin-bottom:4px}
+.ayat-item{padding:18px 2px;border-bottom:1px solid var(--line);transition:background .3s}
+.ayat-item.active{background:var(--accent-soft);border-radius:6px;padding-left:10px;padding-right:10px;margin:0 -10px}
+.ayat-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.ayat-num-badge{width:21px;height:21px;border-radius:50%;background:var(--accent-soft);color:var(--accent-strong);font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.ayat-item.active .ayat-num-badge{background:var(--accent);color:#fff}
+.ayat-play{background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:3px;display:flex;transition:color .15s}
+.ayat-play.playing{color:var(--accent)}
+.ayat-arabic{font-family:var(--font-ar);font-size:24px;line-height:2.15;text-align:right;direction:rtl;color:var(--ink);margin-bottom:12px}
+.ayat-latin{font-size:11.5px;font-style:italic;color:var(--ink-muted);line-height:1.65;margin-bottom:8px}
+.ayat-translation{font-size:12.5px;color:var(--ink-soft);line-height:1.65}
+@media (max-width:380px){.clock{font-size:38px}.ayat-arabic{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="card">
+<div class="header">
+<div class="header-top">
+<span class="site-title">Waktu Sholat & Qur'an</span>
+<div class="location-wrap" onclick="retryGPS()" title="Klik untuk deteksi ulang lokasi">
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+<span class="location-text" id="locationText">memuat...</span>
+</div>
+</div>
+<div class="clock-wrap"><div class="clock" id="clock">00:00:00</div></div>
+<div class="subrow">
+<div class="date" id="date">—</div>
+<div class="weather hidden" id="weather">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="weatherIcon"><circle cx="12" cy="12" r="4"/></svg>
+<span class="temp" id="weatherTemp">—</span>
+<span id="weatherDesc">—</span>
+</div>
+</div>
+</div>
+<div class="tab-bar">
+<button class="tab-btn active" id="tabBtnSholat" onclick="switchTab('sholat')">Waktu Sholat</button>
+<button class="tab-btn" id="tabBtnQuran" onclick="switchTab('quran')">Al-Qur'an</button>
+</div>
+<div class="view" id="viewSholat">
+<div class="search-wrap">
+<input class="search-input" id="cityInput" type="text" placeholder="cari kota... (cth: Bandung)" autocomplete="off" spellcheck="false">
+<button class="search-btn" onclick="searchByCity()" title="Cari">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+</button>
+</div>
+<ul class="prayer-list" id="prayerList"></ul>
+<div class="next-box hidden" id="nextBox">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+Selanjutnya: <span id="nextName">—</span>
+&nbsp;·&nbsp;
+<span id="nextCountdown">—</span>
+</div>
+<div class="footer">Metode: Kemenag Indonesia · Cuaca: Open-Meteo</div>
+</div>
+<div class="view hidden" id="viewQuran">
+<div id="quranListMode">
+<div class="continue-box hidden" id="continueBox" onclick="resumeReading()">
+<div>
+<div class="continue-label">Lanjutkan membaca</div>
+<div class="continue-name" id="continueName">—</div>
+</div>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+</div>
+<div class="search-wrap">
+<input class="search-input" id="surahInput" type="text" placeholder="cari surah... (cth: Yasin, 36)" autocomplete="off" spellcheck="false">
+<button class="search-btn" title="Cari">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+</button>
+</div>
+<ul class="surah-list" id="surahList"></ul>
+<div class="footer">Sumber: EQuran.id (Kemenag RI) · 114 surat · 6.236 ayat</div>
+</div>
+<div id="quranDetailMode" class="hidden">
+<button class="back-btn" onclick="backToSurahList()">
+<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+Semua Surat
+</button>
+<div id="surahDetailContent"></div>
+</div>
+</div>
+</div>
+<audio id="ayatAudio"></audio>
+<script>
+const DEFAULT={lat:-6.2088,lon:106.8456,name:'Jakarta'};
+const PRAYER_CACHE_MS=12*60*60*1000;
+const WEATHER_CACHE_MS=10*60*1000;
+const QURAN_CACHE_MS=30*24*60*60*1000;
+const RECITER='05';
+const prayerNames=['Fajar','Syuruq','Dzuhur','Ashar','Maghrib','Isya'];
+const icons={
+Fajar:`<svg class="prayer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2"/><circle cx="12" cy="12" r="4"/></svg>`,
+Syuruq:`<svg class="prayer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M4.22 4.22l1.42 1.42M2 12h2M20 12h2M19.78 4.22l-1.42 1.42"/><path d="M5 17H19"/><path d="M8 12a4 4 0 0 1 8 0"/></svg>`,
+Dzuhur:`<svg class="prayer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`,
+Ashar:`<svg class="prayer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 12a5 5 0 1 1-10 0 5 5 0 0 1 10 0z"/><path d="M12 2v2M12 20v2M20 12h2M2 12h2"/></svg>`,
+Maghrib:`<svg class="prayer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H19"/><path d="M12 17a5 5 0 0 0 0-10c-.34 0-.67.04-1 .1"/><path d="M4 17A8 8 0 0 1 12 4"/></svg>`,
+Isya:`<svg class="prayer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
+};
+let prayerData=[];
+let prayerTimeZone=null;
+function getLocalTz(){return Intl.DateTimeFormat().resolvedOptions().timeZone}
+function getTz(){return prayerTimeZone||getLocalTz()}
+function getCurrentMinutesInTimeZone(tz){
+const now=new Date();
+const p=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(now);
+const h=parseInt(p.find(x=>x.type==='hour').value,10);
+const m=parseInt(p.find(x=>x.type==='minute').value,10);
+return h*60+m;
+}
+function updateClock(){
+const tz=getTz();
+const now=new Date();
+const p=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).formatToParts(now);
+const g=t=>p.find(x=>x.type===t).value;
+document.getElementById('clock').textContent=g('hour')+':'+g('minute')+':'+g('second');
+document.getElementById('date').textContent=new Intl.DateTimeFormat('id-ID',{timeZone:tz,weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(now);
+}
+setInterval(updateClock,1000);
+updateClock();
+function updateCountdown(){
+if(!prayerData.length)return;
+const cur=getCurrentMinutesInTimeZone(getTz());
+const list=prayerData.filter(p=>p.isPrayer!==false);
+let next=null;
+for(const p of list){
+const[h,m]=p.time.split(':').map(Number);
+if(h*60+m>cur){next={name:p.name,h,m};break}
+}
+if(!next){
+const[h,m]=list[0].time.split(':').map(Number);
+next={name:list[0].name+' (besok)',h,m};
+}
+let diff=next.h*60+next.m-cur;
+if(diff<0)diff+=24*60;
+const hh=Math.floor(diff/60);
+const mm=diff%60;
+document.getElementById('nextName').textContent=next.name;
+document.getElementById('nextCountdown').textContent=(hh>0?hh+' jam ':'')+mm+' menit lagi';
+}
+setInterval(updateCountdown,30000);
+function renderSkeleton(){
+const el=document.getElementById('prayerList');
+el.innerHTML='';
+prayerNames.forEach(name=>{
+const li=document.createElement('li');
+li.className='prayer-item skeleton-row';
+li.innerHTML='<div class="prayer-left">'+(icons[name]||'')+'<span class="prayer-name">'+name+'</span></div><span class="prayer-time">00:00</span>';
+el.appendChild(li);
+});
+}
+function cacheGet(key,maxAge){
+try{
+const raw=localStorage.getItem(key);
+if(!raw)return null;
+const{t,v}=JSON.parse(raw);
+if(Date.now()-t>maxAge)return null;
+return v;
+}catch{return null}
+}
+function cacheSet(key,v){try{localStorage.setItem(key,JSON.stringify({t:Date.now(),v}))}catch{}}
+function switchTab(tab){
+const isSholat=tab==='sholat';
+if(!isSholat)stopAudio();
+document.getElementById('viewSholat').classList.toggle('hidden',!isSholat);
+document.getElementById('viewQuran').classList.toggle('hidden',isSholat);
+document.getElementById('tabBtnSholat').classList.toggle('active',isSholat);
+document.getElementById('tabBtnQuran').classList.toggle('active',!isSholat);
+if(!isSholat&&!surahList.length)initQuran();
+}
+function roundCoord(n){return Math.round(n*100)/100}
+function init(){
+const lastLoc=cacheGet('lastLoc',30*24*60*60*1000);
+const startLoc=lastLoc||DEFAULT;
+const key=roundCoord(startLoc.lat)+'_'+roundCoord(startLoc.lon);
+document.getElementById('locationText').textContent=startLoc.name;
+const cachedPrayers=cacheGet('prayers_'+key,PRAYER_CACHE_MS);
+const cachedTz=cacheGet('prayerTz_'+key,PRAYER_CACHE_MS);
+if(cachedTz){prayerTimeZone=cachedTz;updateClock();}
+if(cachedPrayers){prayerData=cachedPrayers;renderPrayers(cachedPrayers);}
+else renderSkeleton();
+const cachedWeather=cacheGet('weather_'+key,WEATHER_CACHE_MS);
+if(cachedWeather)renderWeather(cachedWeather);
+if(lastLoc&&lastLoc.manual){fetchAll(startLoc.lat,startLoc.lon,startLoc.name,true);return;}
+if(!navigator.geolocation){fetchAll(startLoc.lat,startLoc.lon,startLoc.name,false);return;}
+navigator.geolocation.getCurrentPosition(
+pos=>reverseGeocode(pos.coords.latitude,pos.coords.longitude),
+()=>fetchAll(startLoc.lat,startLoc.lon,startLoc.name,false),
+{timeout:5000,maximumAge:10*60*1000}
+);
+}
+function retryGPS(){
+try{localStorage.removeItem('lastLoc')}catch{}
+document.getElementById('locationText').textContent='mendeteksi...';
+init();
+}
+async function reverseGeocode(lat,lon){
+try{
+const res=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`);
+const data=await res.json();
+const city=(data&&(data.city||data.locality||data.principalSubdivision))||'Lokasi Anda';
+fetchAll(lat,lon,city,false);
+}catch{fetchAll(lat,lon,'Lokasi Anda',false)}
+}
+async function searchByCity(){
+const val=document.getElementById('cityInput').value.trim();
+if(val.length<3)return;
+document.getElementById('locationText').textContent='mencari...';
+renderSkeleton();
+try{
+const res=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(val)}&count=1&language=id&format=json`);
+const data=await res.json();
+if(!data.results||!data.results.length)throw new Error('Kota tidak ditemukan');
+const r=data.results[0];
+fetchAll(r.latitude,r.longitude,r.name,true);
+document.getElementById('cityInput').value='';
+}catch(err){
+document.getElementById('prayerList').innerHTML='<li class="status error">'+err.message+'</li>';
+document.getElementById('locationText').textContent='gagal';
+}
+}
+document.getElementById('cityInput').addEventListener('keydown',e=>{if(e.key==='Enter')searchByCity()});
+async function fetchAll(lat,lon,cityName,isManual){
+document.getElementById('locationText').textContent=cityName;
+cacheSet('lastLoc',{lat,lon,name:cityName,manual:!!isManual});
+const key=roundCoord(lat)+'_'+roundCoord(lon);
+const hasPrayerCache=!!cacheGet('prayers_'+key,PRAYER_CACHE_MS);
+if(!hasPrayerCache)renderSkeleton();
+const[prayerResult,weatherResult]=await Promise.allSettled([fetchPrayerTimes(lat,lon,key),fetchWeather(lat,lon,key)]);
+if(prayerResult.status==='fulfilled')renderPrayers(prayerResult.value);
+else if(!hasPrayerCache)document.getElementById('prayerList').innerHTML='<li class="status error">Gagal memuat jadwal. Cek koneksi internet.</li>';
+if(weatherResult.status==='fulfilled')renderWeather(weatherResult.value);
+}
+async function fetchPrayerTimes(lat,lon,key){
+const ts=Math.floor(Date.now()/1000);
+const url=`https://api.aladhan.com/v1/timings/${ts}?latitude=${lat}&longitude=${lon}&method=20`;
+const res=await fetch(url);
+const data=await res.json();
+if(data.code!==200)throw new Error('API error');
+const tz=(data.data.meta&&data.data.meta.timezone)||getLocalTz();
+prayerTimeZone=tz;
+cacheSet('prayerTz_'+key,tz);
+updateClock();
+const prayers=[
+{name:'Fajar',time:data.data.timings.Fajr,isPrayer:true},
+{name:'Syuruq',time:data.data.timings.Sunrise,isPrayer:false},
+{name:'Dzuhur',time:data.data.timings.Dhuhr,isPrayer:true},
+{name:'Ashar',time:data.data.timings.Asr,isPrayer:true},
+{name:'Maghrib',time:data.data.timings.Maghrib,isPrayer:true},
+{name:'Isya',time:data.data.timings.Isha,isPrayer:true}
+];
+cacheSet('prayers_'+key,prayers);
+return prayers;
+}
+async function fetchWeather(lat,lon,key){
+const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`;
+const res=await fetch(url);
+const data=await res.json();
+if(!data.current)throw new Error('weather error');
+const w={temp:Math.round(data.current.temperature_2m),code:data.current.weather_code};
+cacheSet('weather_'+key,w);
+return w;
+}
+const weatherMap={
+0:['Cerah','sun'],1:['Cerah berawan','sun'],2:['Berawan sebagian','cloud-sun'],3:['Mendung','cloud'],
+45:['Berkabut','cloud'],48:['Berkabut','cloud'],
+51:['Gerimis ringan','rain'],53:['Gerimis','rain'],55:['Gerimis lebat','rain'],
+61:['Hujan ringan','rain'],63:['Hujan','rain'],65:['Hujan lebat','rain'],
+71:['Salju ringan','rain'],73:['Salju','rain'],75:['Salju lebat','rain'],
+80:['Hujan ringan','rain'],81:['Hujan','rain'],82:['Hujan lebat','rain'],
+95:['Badai petir','storm'],96:['Badai petir','storm'],99:['Badai petir','storm']
+};
+const weatherIcons={
+sun:`<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>`,
+'cloud-sun':`<path d="M12 2v2M4.9 4.9l1.4 1.4"/><path d="M17 18H7a4 4 0 1 1 .6-7.96A5.5 5.5 0 0 1 17 12.5 3.5 3.5 0 0 1 17 18z"/>`,
+cloud:`<path d="M17.5 19H8a4.5 4.5 0 1 1 .7-8.94A6 6 0 0 1 20 10.5 3.5 3.5 0 0 1 17.5 19z"/>`,
+rain:`<path d="M16 13v-1a4 4 0 0 0-8 0v1"/><path d="M18.5 17H7a4.5 4.5 0 1 1 .7-8.94A6 6 0 0 1 20 10.5 3.5 3.5 0 0 1 17.5 17z"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/>`,
+storm:`<path d="M17.5 17H7a4.5 4.5 0 1 1 .7-8.94A6 6 0 0 1 20 10.5 3.5 3.5 0 0 1 17.5 17z"/><path d="M13 13l-2 3h2l-2 3"/>`
+};
+function renderWeather(w){
+const[label,iconKey]=weatherMap[w.code]||['Cerah','sun'];
+document.getElementById('weatherTemp').textContent=w.temp+'°C';
+document.getElementById('weatherDesc').textContent=label;
+document.getElementById('weatherIcon').innerHTML=weatherIcons[iconKey]||weatherIcons.sun;
+document.getElementById('weather').classList.remove('hidden');
+}
+function renderPrayers(prayers){
+const listEl=document.getElementById('prayerList');
+prayerData=prayers;
+listEl.innerHTML='';
+const cur=getCurrentMinutesInTimeZone(getTz());
+let nextIdx=-1;
+for(let i=0;i<prayers.length;i++){
+if(prayers[i].isPrayer===false)continue;
+const[h,m]=prayers[i].time.split(':').map(Number);
+if(h*60+m>cur){nextIdx=i;break}
+}
+if(nextIdx!==-1)listEl.classList.add('has-next');
+else listEl.classList.remove('has-next');
+prayers.forEach((p,i)=>{
+const li=document.createElement('li');
+li.className='prayer-item'+(i===nextIdx?' is-next':'');
+li.innerHTML='<div class="prayer-left">'+(icons[p.name]||'')+'<span class="prayer-name">'+p.name+'</span></div><span class="prayer-time">'+p.time+'</span>';
+listEl.appendChild(li);
+});
+document.getElementById('nextBox').classList.remove('hidden');
+updateCountdown();
+}
+init();
+let surahList=[];
+let currentSurahAyat=[];
+let currentAyatIdx=-1;
+let isPlayAll=false;
+const audioEl=document.getElementById('ayatAudio');
+let playingBtn=null;
+const playIcon=`<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+const pauseIcon=`<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>`;
+async function initQuran(){
+document.getElementById('surahList').innerHTML='<li class="status">Memuat daftar surat...</li>';
+const cached=cacheGet('quranSurahList',QURAN_CACHE_MS);
+if(cached){surahList=cached;renderSurahList(surahList)}
+try{
+const res=await fetch('https://equran.id/api/v2/surat');
+const json=await res.json();
+const data=json.data||json;
+surahList=data;
+cacheSet('quranSurahList',data);
+renderSurahList(surahList);
+}catch(err){
+if(!cached)document.getElementById('surahList').innerHTML='<li class="status error">Gagal memuat daftar surat. Cek koneksi internet.</li>';
+}
+showContinueBox();
+}
+function renderSurahList(list){
+const el=document.getElementById('surahList');
+if(!list.length){el.innerHTML='<li class="status">Surat tidak ditemukan.</li>';return}
+el.innerHTML=list.map(s=>`<li class="surah-item" onclick="openSurah(${s.nomor})"><span class="surah-num">${s.nomor}</span><div class="surah-info"><div class="surah-name-latin">${s.namaLatin}</div><div class="surah-meta">${s.tempatTurun} · ${s.jumlahAyat} ayat · ${s.arti}</div></div><span class="surah-name-arabic">${s.nama}</span></li>`).join('');
+}
+document.getElementById('surahInput').addEventListener('input',e=>{
+const q=e.target.value.trim().toLowerCase();
+if(!q){renderSurahList(surahList);return}
+const filtered=surahList.filter(s=>s.namaLatin.toLowerCase().includes(q)||s.arti.toLowerCase().includes(q)||String(s.nomor)===q);
+renderSurahList(filtered);
+});
+function showContinueBox(){
+const last=cacheGet('quranLastRead',365*24*60*60*1000);
+const box=document.getElementById('continueBox');
+if(last){
+document.getElementById('continueName').textContent=last.nomor+'. '+last.namaLatin;
+box.classList.remove('hidden');
+}else box.classList.add('hidden');
+}
+function resumeReading(){
+const last=cacheGet('quranLastRead',365*24*60*60*1000);
+if(last)openSurah(last.nomor);
+}
+async function openSurah(nomor){
+stopAudio();
+document.getElementById('quranListMode').classList.add('hidden');
+document.getElementById('quranDetailMode').classList.remove('hidden');
+document.getElementById('surahDetailContent').innerHTML='<div class="status">Memuat surat...</div>';
+window.scrollTo(0,0);
+const cached=cacheGet('quranSurah_'+nomor,QURAN_CACHE_MS);
+if(cached)renderSurahDetail(cached);
+try{
+const res=await fetch('https://equran.id/api/v2/surat/'+nomor);
+const json=await res.json();
+const data=json.data||json;
+cacheSet('quranSurah_'+nomor,data);
+renderSurahDetail(data);
+const meta=surahList.find(s=>s.nomor===nomor)||data;
+cacheSet('quranLastRead',{nomor,namaLatin:meta.namaLatin||data.namaLatin});
+}catch(err){
+if(!cached)document.getElementById('surahDetailContent').innerHTML='<div class="status error">Gagal memuat surat. Cek koneksi internet.</div>';
+}
+}
+function renderSurahDetail(s){
+currentSurahAyat=s.ayat||[];
+currentAyatIdx=-1;
+isPlayAll=false;
+playingBtn=null;
+const showBismillah=s.nomor!==1&&s.nomor!==9;
+let html=`<div class="surah-header"><div class="surah-header-arabic">${s.nama}</div><div class="surah-header-latin">${s.namaLatin}</div><div class="surah-header-arti">"${s.arti}"</div><div class="surah-header-meta">${s.tempatTurun} · ${s.jumlahAyat} Ayat</div><button class="play-all-btn" id="playAllBtn" data-action="play-all">▶ Putar Semua Ayat</button></div>`;
+if(showBismillah)html+='<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>';
+html+=s.ayat.map((a,i)=>{
+const audioUrl=a.audio&&(a.audio[RECITER]||Object.values(a.audio)[0]);
+const latin=a.teksLatin?'<div class="ayat-latin">'+a.teksLatin+'</div>':'';
+return `<div class="ayat-item" data-idx="${i}"><div class="ayat-top"><span class="ayat-num-badge">${a.nomorAyat}</span>${audioUrl?`<button class="ayat-play" data-idx="${i}">${playIcon}</button>`:''}</div><div class="ayat-arabic">${a.teksArab}</div>${latin}<div class="ayat-translation">${a.teksIndonesia}</div></div>`;
+}).join('');
+document.getElementById('surahDetailContent').innerHTML=html;
+}
+document.getElementById('surahDetailContent').addEventListener('click',e=>{
+const playAll=e.target.closest('[data-action="play-all"]');
+if(playAll){playAllFromStart();return}
+const btn=e.target.closest('.ayat-play');
+if(!btn)return;
+const idx=parseInt(btn.dataset.idx,10);
+if(currentAyatIdx===idx&&!isPlayAll){stopAudio();return}
+playAyatByIndex(idx,false);
+});
+function backToSurahList(){
+stopAudio();
+document.getElementById('quranDetailMode').classList.add('hidden');
+document.getElementById('quranListMode').classList.remove('hidden');
+showContinueBox();
+}
+function stopAudio(){
+try{audioEl.pause();audioEl.currentTime=0}catch{}
+if(playingBtn){playingBtn.classList.remove('playing');playingBtn.innerHTML=playIcon}
+playingBtn=null;
+isPlayAll=false;
+document.querySelectorAll('.ayat-item.active').forEach(el=>el.classList.remove('active'));
+const pb=document.getElementById('playAllBtn');
+if(pb){pb.classList.remove('playing');pb.innerHTML='▶ Putar Semua Ayat'}
+}
+function playAyatByIndex(idx,autoMode){
+const a=currentSurahAyat[idx];
+if(!a)return;
+const audioUrl=a.audio&&(a.audio[RECITER]||Object.values(a.audio)[0]);
+if(!audioUrl){if(autoMode&&idx<currentSurahAyat.length-1)playAyatByIndex(idx+1,true);return}
+if(playingBtn){playingBtn.classList.remove('playing');playingBtn.innerHTML=playIcon}
+document.querySelectorAll('.ayat-item.active').forEach(el=>el.classList.remove('active'));
+try{audioEl.pause()}catch{}
+audioEl.src=audioUrl;
+audioEl.play().catch(()=>{});
+currentAyatIdx=idx;
+isPlayAll=autoMode;
+const btn=document.querySelector('.ayat-play[data-idx="'+idx+'"]');
+if(btn){btn.classList.add('playing');btn.innerHTML=pauseIcon;playingBtn=btn}
+const item=document.querySelector('.ayat-item[data-idx="'+idx+'"]');
+if(item){item.classList.add('active');item.scrollIntoView({behavior:'smooth',block:'center'})}
+const pb=document.getElementById('playAllBtn');
+if(pb){if(autoMode){pb.classList.add('playing');pb.innerHTML='■ Berhenti'}else{pb.classList.remove('playing');pb.innerHTML='▶ Putar Semua Ayat'}}
+}
+function playAllFromStart(){
+if(isPlayAll){stopAudio();return}
+playAyatByIndex(0,true);
+}
+audioEl.addEventListener('ended',()=>{
+if(isPlayAll&&currentAyatIdx<currentSurahAyat.length-1)playAyatByIndex(currentAyatIdx+1,true);
+else stopAudio();
+});
+</script>
+</body>
+</html>
